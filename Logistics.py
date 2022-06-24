@@ -11,43 +11,49 @@
 #
 # -Доход транспортного агентства, в том числе с разбивкой по видам транспорта и городам.
 # -Среднее время доставки груза, в том числе с разбивкой по видам транспорта и городам.
-# -Список исполняемых заказов с возможность сортировки по городам, видам транспорта, стоимости перевозки.
+# -Список исполняемых заказов с возможностью сортировки по городам, видам транспорта, стоимости перевозки.
 
 
 class Transport_agency:
-    dist_Minsk_Gomel=dist_Gomel_Minsk=309 #3.26 ~ время поездки
-    dist_Minsk_Brest = dist_Brest_Minsk = 348 #3.49
-    dist_Minsk_Grodno = dist_Grodno_Minsk = 282 #3.39
-    dist_Minsk_Vitebsk = dist_Vitebsk_Minsk = 294 #3.14
-    dist_Minsk_Mogilev = dist_Mogilev_Minsk = 199 #2.25
-    dist_Minsk_Kiev = dist_Kiev_Minsk = 573 #6.46
-    dist_Minsk_Moskow = dist_Moskow_Minsk = 688 #7.41
-    dist_Gomel_Brest = dist_Brest_Gomel = 649 #6,47
-    dist_Gomel_Grodno = dist_Grodno_Gomel = 593 #6,31
-    dist_Gomel_Vitebsk = dist_Vitebsk_Gomel = 330 #4,21
-    dist_Gomel_Mogilev = dist_Mogilev_Gomel = 175 #2.32
-    dist_Gomel_Kiev = dist_Kiev_Gomel = 263 #4,4
-    dist_Gomel_Moskow = dist_Moskow_Gomel = 661 #8,34
-    dist_Brest_Grodno = dist_Grodno_Brest = 239  # 3,14
-    dist_Brest_Vitebsk = dist_Vitebsk_Brest = 627  # 6,39
-    dist_Brest_Mogilev = dist_Mogilev_Brest = 529  # 5,35
-    dist_Brest_Kiev = dist_Kiev_Brest = 577  # 7,29
-    dist_Brest_Moskow = dist_Moskow_Brest = 1051  # 11,26
-    dist_Grodno_Vitebsk = dist_Vitebsk_Grodno = 536 # 6,13
-    dist_Grodno_Mogilev = dist_Mogilev_Grodno = 478  # 5,15
-    dist_Grodno_Kiev = dist_Kiev_Grodno = 712  # 10
-    dist_Grodno_Moskow = dist_Moskow_Grodno = 992  # 11,28
-    dist_Vitebsk_Mogilev = dist_Mogilev_Vitebsk = 162  # 2.13
-    dist_Vitebsk_Kiev = dist_Kiev_Vitebsk = 596  # 8,46
-    dist_Vitebsk_Moskow = dist_Moskow_Vitebsk = 517  # 6,29
-    dist_Mogilev_Kiev = dist_Kiev_Mogilev = 440  # 6.52
-    dist_Mogilev_Moskow = dist_Moskow_Mogilev = 587  # 7.17
-    dist_Kiev_Moskow = dist_Moskow_Kiev = 891 #11,47
+    list_of_branch='Minsk, Gomel, Brest, Grodno, Vitebsk,Mogilev, Moskow, Kiev'
+    list_of_distans={
+        'Minsk_Gomel': 309, #3.26 ~ время поездки
+        'Minsk_Brest' : 348, #3.49
+        'Minsk_Grodno' : 282, #3.39
+        'Minsk_Vitebsk' : 294, #3.14
+        'Minsk_Mogilev' : 199, #2.25
+        'Minsk_Kiev':573, #6.46
+        'Minsk_Moskow' : 688, #7.41
+        'Gomel_Brest' : 649, #6,47
+        'Gomel_Grodno' : 593, #6,31
+        'Gomel_Vitebsk' : 330, #4,21
+        'Gomel_Mogilev' :175, #2.32
+        'Gomel_Kiev' : 263, #4,4
+        'Gomel_Moskow' : 661, #8,34
+        'Brest_Grodno': 239,  # 3,14
+        'Brest_Vitebsk' : 627,  # 6,39
+        'Brest_Mogilev' : 529,  # 5,35
+        'Brest_Kiev' : 577,  # 7,29
+        'Brest_Moskow' :1051, # 11,26
+        'Grodno_Vitebsk': 536,# 6,13
+        'Grodno_Mogilev': 478, # 5,15
+        'Grodno_Kiev' :712 , # 10
+        'Grodno_Moskow' : 992 , # 11,28
+        'Vitebsk_Mogilev' : 162 , # 2.13
+        'Vitebsk_Kiev' : 596 , # 8,46
+        'Vitebsk_Moskow' : 517 , # 6,29
+        'Mogilev_Kiev' : 440 , # 6.52
+        'Mogilev_Moskow' : 587 , # 7.17
+        'Kiev_Moskow' : 891 }#11,47
+
 
     def __init__(self,location):
         self.location=location
+    def info_distanse(self):
+        print(self.list_of_distans)
 
 class Transport(Transport_agency):
+    d_city={}
     def __init__(self, location, model, load_capacity, speed, price_city, price_intercity):
         super().__init__(location)
         self.model=model
@@ -55,51 +61,126 @@ class Transport(Transport_agency):
         self.speed=speed
         self.price_city = price_city
         self.price_intercity=price_intercity
+        self.add()
+
+    def add (self): #добавление транспорта в реестр парка агентства
+        if self.model not in self.d_city.keys():
+            self.d_city.update({self.model:f'{self.location}, {self.load_capacity}, {self.speed}, {self.price_city}, {self.price_intercity}'})
+        else:
+            print('Error! Transport with this name exists, please enter a different name')
+
+    @classmethod
+    def cost_calculation_city (self,model,time,wight):#расчет стоимости перевозки в городе с учетом того, что самолеты и поезда не используются
+        if self.d_city[model][3]!=0:
+            print(f'стоимость перевозки за {time} часа транспортом {model} груза {wight} тонн равна {round(time*float(self.d_city[model].split(", ")[3])*wight/float(self.d_city[model].split(", ")[1]),2)} рублей')
+        else:
+            print('This type of transport is not used for delivery within the city')
+    @classmethod
+    def cost_calculation_intercity (self,model,leave_city, come_city,wight):#расчет стоимости перевозки за городом
+        route=leave_city+'_'+come_city
+        print('route=', route)
+        if route in self.list_of_distans.keys():
+            print(f'стоимость перевозки за  расстояние {self.list_of_distans[route]} км транспортом {model} равна {round(self.list_of_distans[route]*float(self.d_city[model].split(", ")[4])*wight/float(self.d_city[model].split(", ")[1]),2)}')
+        else:
+            print('There is no such direction')
+
+    @classmethod
+    def del_transport (self,model):
+        if model in self.d_city.keys():
+            del self.d_city[model]
+        else:
+            print('Error! This car is not in the fleet')
+
+    @classmethod
+    def info_type_all(self):
+        print('Парк транcпорта агентства ')
+        for key,value in self.d_city.items():
+            print(key,value)
+    @classmethod
+    def change_locayion(self, model, new_city):
+        print(model,':', self.d_city[model],' -before')
+        if new_city in self.list_of_branch:
+            a=self.d_city[model].split()
+            a[0]=new_city+','
+            a=' '.join(a)
+            self.d_city[model]=a
+            print(model,':',self.d_city[model],' -after')
+
+    @classmethod
+    def info_in_city(self,city):
+        print(f'Наличие транспорта в городе {city}:')
+        for key,value in self.d_city.items():
+            if city in self.d_city[key]:
+                print(key,value)
 
 class Auto_transport (Transport):
-    d_Minsk = {}
-    d_Brest = {}
-    d_Grodno = {}
-    d_Vitebsk = {}
-    d_Mogilev = {}
-    d_Gomel = {}
-    d_Moskow = {}
-    d_Minsk = {}
-    d_city={}
-    # self.city = city = {}
+
     def __init__(self, location, model, load_capacity, speed, price_city, price_intercity):
         super().__init__(location, model, load_capacity, speed, price_city, price_intercity)
 
-
-    def add (self):
-        self.d_city.update({self.model:{self.location, self.load_capacity,self.speed,self.price_city,self.price_intercity}})
     @classmethod
-    def info_auto_city(self,city):
-            print(f'Наличие авто в городе {city}:')
-            for key,value in self.d_city.items():
-                if city in self.d_city[key]:
-                    print(key,value)
-    @classmethod
-    def info_auto_all(self):
-            print('Автопарк агентства:')
-            for key,value in self.d_city.items():
-                    print(key,value)
+    def info_only_auto(self):
+        print('Список только автотранпорта:')
+        for key,value in self.d_city.items():
+            if int(self.d_city[key].split(', ')[3])!=0:
+                print(key,value)
 
-    
+
+class Train_transport (Transport):
+    def __init__(self, location, model, load_capacity, speed, price_city, price_intercity):
+        super().__init__(location, model, load_capacity, speed, price_city, price_intercity)
+
+    @classmethod
+    def info_only_train(self):
+        print('Список только поездов:')
+        for key,value in self.d_city.items():
+            if int(self.d_city[key].split(', ')[3])==0 and int(self.d_city[key].split(', ')[2])<250:
+                print(key,value)
+
+class Airplane_transport (Transport):
+    def __init__(self, location, model, load_capacity, speed, price_city, price_intercity):
+        super().__init__(location, model, load_capacity, speed, price_city, price_intercity)
+
+    @classmethod
+    def info_only_airplane(self):
+        print('Список только самолетов:')
+        for key,value in self.d_city.items():
+            if int(self.d_city[key].split(', ')[3])==0 and int(self.d_city[key].split(', ')[2])>250:
+                print(key,value)
+# day=1
+# while day<=7:
+#
+
+
+
+
 
 #price_city - 1 hour
 #price_intercity - 1 km
 car1=Auto_transport('Minsk','Iveko',2.5,65,25,0.6)
-car1.add()
 car2=Auto_transport('Minsk','Volvo',20,80,60,3.8)
-car2.add()
 car3 =Auto_transport('Brest', 'Man',5,90,50,1.2)
-car3.add()
-Auto_transport.info_auto_city('Minsk')
-Auto_transport.info_auto_city('Brest')
-Auto_transport.info_auto_all()
-
-
+Auto_transport.info_in_city('Minsk')
+Auto_transport.info_in_city('Brest')
+Auto_transport.info_type_all()
+Auto_transport.change_locayion('Iveko', 'Vitebsk')
+Auto_transport.cost_calculation_city('Iveko',3.25,2)
+Auto_transport.cost_calculation_intercity('Man','Minsk','Kiev',4)
+print(Auto_transport.list_of_distans)
+Auto_transport.del_transport('Man')
+Auto_transport.info_type_all()
+car4 =Auto_transport('Brest', 'Man',6,90,50,1.2)
+Auto_transport.info_type_all()
+train1=Train_transport('Grodno','GV-50/5',250, 80,0, 1778)
+train2=Train_transport('Minsk','GV-30/6',180, 80,0, 1224)
+Train_transport.info_type_all()
+print(Train_transport.d_city)
+Auto_transport.info_only_auto()
+Train_transport.info_only_train()
+plane1=Airplane_transport('Minsk','AN_225',640, 800, 0, 136)
+Airplane_transport.info_only_airplane()
+print(Train_transport.d_city)
+Airplane_transport.cost_calculation_intercity('AN_225','Minsk','Moskow',135)
 
 
 
